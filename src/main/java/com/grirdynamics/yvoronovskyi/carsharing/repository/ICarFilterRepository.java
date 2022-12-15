@@ -34,4 +34,10 @@ public interface ICarFilterRepository extends JpaRepository<Car, Long> {
 
     @RestResource(path = "by-engine-type", rel = "by-engine-type")
     Page<Car> findByEngineType(@Param("type") EngineType engineType, Pageable pageable);
+
+    @RestResource(path = "by", rel = "by")
+    Page<Car> findByCarStatusAndTransmissionAndCarClassAndModelAndBrandAndEngineType(
+            @Param("status") CarStatus status, @Param("transmission") Transmission transmission,
+            @Param("class") CarClass carclass, @Param("model") String model,
+            @Param("brand") String brand, @Param("type") EngineType engineType, Pageable pageable);
 }

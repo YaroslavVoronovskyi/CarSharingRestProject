@@ -1,10 +1,9 @@
 package com.grirdynamics.yvoronovskyi.carsharing.controller;
 
-import com.grirdynamics.yvoronovskyi.carsharing.controller.exception.CarRestControllerException;
 import com.grirdynamics.yvoronovskyi.carsharing.controller.rest.dto.CarDto;
 import com.grirdynamics.yvoronovskyi.carsharing.model.Car;
 import com.grirdynamics.yvoronovskyi.carsharing.service.ICarService;
-import org.hibernate.exception.ConstraintViolationException;
+
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,45 +47,29 @@ public class CarsRestController {
     @Produces(MediaType.APPLICATION_JSON_VALUE)
     public CarDto getCarById(@PathVariable("id") long carId) {
         LOGGER.debug("Try get car wih id {}", carId);
-        CarDto carDto;
-        try {
-            carDto = convertToDto(carService.get(carId));
-        } catch (EntityNotFoundException exception) {
-            throw new CarRestControllerException("Car with ID " + carId + " not found!");
-        }
+        Car car = carService.get(carId);
         LOGGER.debug("Car wih id {} was successfully got", carId);
-        return carDto;
+        return convertToDto(car);
     }
 
-    @GetMapping("/all")
+    @GetMapping()
     @Produces(MediaType.APPLICATION_JSON_VALUE)
     public List<CarDto> showAllCarsOnMap() {
         LOGGER.debug("Try get all cars");
-        List<CarDto> carsDtoList;
-        try {
-            carsDtoList = convertToDtoList(carService.getAll());
-        } catch (EntityNotFoundException exception) {
-            throw new CarRestControllerException("Cars not found!");
-        }
+        List<CarDto> carsDtoList = convertToDtoList(carService.getAll());
         LOGGER.debug("All cars was successfully got");
         return carsDtoList;
     }
 
-    @PostMapping("/registration")
+    @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
     @Consumes(MediaType.APPLICATION_JSON_VALUE)
     @Produces(MediaType.APPLICATION_JSON_VALUE)
     public CarDto registerNewCar(@RequestBody @Valid CarDto carDto) {
         LOGGER.debug("Try register new car");
-        Car car;
-        try {
-            car = carService.create(convertToEntity(carDto));
-            carDto = convertToDto(car);
-        } catch (ConstraintViolationException exception) {
-            throw new CarRestControllerException("BAD REQUEST FROM CONTROLLER CREATE", exception);
-        }
+        Car car = carService.create(convertToEntity(carDto));
         LOGGER.debug("New car was registered");
-        return carDto;
+        return convertToDto(car);
     }
 
     @PutMapping("/{id}")
@@ -96,11 +79,7 @@ public class CarsRestController {
     public CarDto updateCarInformation(@PathVariable("id") long carId, @RequestBody @Valid CarDto carDto) {
         LOGGER.debug("Try update car wih id {}", carId);
         carDto.setId(carId);
-        try {
-            carService.update(convertToEntity(carDto));
-        } catch (ConstraintViolationException exception) {
-            throw new CarRestControllerException("BAD REQUEST FROM CONTROLLER UPDATE", exception);
-        }
+        carService.update(convertToEntity(carDto));
         LOGGER.debug("Car was updated wih id {}", carId);
         return carDto;
     }
@@ -109,11 +88,7 @@ public class CarsRestController {
     @Consumes(MediaType.APPLICATION_JSON_VALUE)
     public void deleteCarInformation(@PathVariable("id") long carId) {
         LOGGER.debug("Try delete car wih id {}", carId);
-        try {
-            carService.delete(carId);
-        } catch (EntityNotFoundException exception) {
-            throw new CarRestControllerException("Car with" + carId + " can't be delete");
-        }
+        carService.delete(carId);
         LOGGER.debug("Car was deleted wih id {}", carId);
     }
 
@@ -122,12 +97,18 @@ public class CarsRestController {
     @Produces(MediaType.APPLICATION_JSON_VALUE)
     public List<CarDto> findNearestCarByLocation(@RequestParam Double latitude, @RequestParam Double longitude,
                                                  @Param("count") Long count) {
+        LOGGER.debug("Try get cars with latitude {} longitude {} and count {}", latitude, longitude, count);
         List<Car> carsList = carService.getCarByLocation(latitude, longitude, count);
+        LOGGER.debug("Cars with latitude {} longitude {} and count {} was successfully got", latitude, longitude, count);
         return convertToDtoList(carsList);
     }
 
     private CarDto convertToDto(Car car) {
-        return modelMapper.map(car, CarDto.class);
+        try {
+            return modelMapper.map(car, CarDto.class);
+        } catch (org.modelmapper.MappingException exception) {
+            throw new EntityNotFoundException("Car not found!");
+        }
     }
 
     private Car convertToEntity(CarDto carDto) {

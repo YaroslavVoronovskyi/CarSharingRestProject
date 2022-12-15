@@ -1,7 +1,7 @@
 package com.grirdynamics.yvoronovskyi.carsharing.controller.exception;
 
+import com.grirdynamics.yvoronovskyi.carsharing.service.exception.DublicateLicensePlateException;
 import lombok.AllArgsConstructor;
-import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -27,14 +27,15 @@ import java.util.stream.Collectors;
 public class CarRestControllerExceptionHandler extends ResponseEntityExceptionHandler {
 
     @Override
-    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
-                                                                  HttpHeaders headers, HttpStatus status, WebRequest request) {
-        List<String> errors = ex.getBindingResult().getFieldErrors().stream().map(x -> x.getField() + " " + x.getDefaultMessage())
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers,
+                                                                  HttpStatus status, WebRequest request) {
+        List<String> errors = ex.getBindingResult().getFieldErrors().stream()
+                .map(x -> x.getField() + " " + x.getDefaultMessage())
                 .collect(Collectors.toList());
         ApiError apiError = ApiError.builder()
+                .error(HttpStatus.BAD_REQUEST.value())
                 .status(HttpStatus.BAD_REQUEST)
                 .timestamp(LocalDateTime.now())
-                .error(HttpStatus.BAD_REQUEST.name())
                 .message(errors.toString())
                 .build();
         return buildResponseEntity(apiError);
@@ -43,9 +44,9 @@ public class CarRestControllerExceptionHandler extends ResponseEntityExceptionHa
     @ExceptionHandler(value = {EntityNotFoundException.class})
     public ResponseEntity<Object> handlerRequestException(EntityNotFoundException exception) {
         ApiError apiError = ApiError.builder()
+                .error(HttpStatus.NOT_FOUND.value())
                 .status(HttpStatus.NOT_FOUND)
                 .timestamp(LocalDateTime.now())
-                .error(HttpStatus.NOT_FOUND.name())
                 .message(exception.getMessage())
                 .build();
         return buildResponseEntity(apiError);
@@ -54,22 +55,32 @@ public class CarRestControllerExceptionHandler extends ResponseEntityExceptionHa
     @ExceptionHandler(value = {EmptyResultDataAccessException.class})
     public ResponseEntity<Object> handlerRequestException(EmptyResultDataAccessException exception) {
         ApiError apiError = ApiError.builder()
+                .error(HttpStatus.NOT_FOUND.value())
                 .status(HttpStatus.NOT_FOUND)
                 .timestamp(LocalDateTime.now())
-                .error(HttpStatus.NOT_FOUND.name())
                 .message(exception.getMessage())
                 .build();
         return buildResponseEntity(apiError);
     }
 
-    @ExceptionHandler(value = {ConstraintViolationException.class})
-    public ResponseEntity<Object> handlerRequestException(ConstraintViolationException exception){
+    @ExceptionHandler(value = {DublicateLicensePlateException.class})
+    public ResponseEntity<Object> handlerRequestException(DublicateLicensePlateException exception) {
         ApiError apiError = ApiError.builder()
+                .error(HttpStatus.CONFLICT.value())
                 .status(HttpStatus.CONFLICT)
                 .timestamp(LocalDateTime.now())
-                .error(HttpStatus.CONFLICT.name())
-                .message(exception.getMessage())
+                .message(exception.getLocalizedMessage())
                 .build();
+        return buildResponseEntity(apiError);
+    }
+
+    @ExceptionHandler(value = {InternalServerErrorException.class})
+    public ResponseEntity<Object> handlerRequestException(InternalServerErrorException exception) {
+        ApiError apiError = ApiError.builder()
+                .error(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .timestamp(LocalDateTime.now())
+                .message(exception.getMessage()).build();
         return buildResponseEntity(apiError);
     }
 

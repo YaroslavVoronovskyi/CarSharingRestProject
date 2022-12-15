@@ -23,7 +23,9 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import java.io.Serializable;
 
-import static javax.persistence.CascadeType.*;
+import static javax.persistence.CascadeType.PERSIST;
+import static javax.persistence.CascadeType.MERGE;
+import static javax.persistence.CascadeType.REFRESH;
 
 @Builder
 @Entity

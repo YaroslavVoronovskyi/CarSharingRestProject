@@ -23,9 +23,11 @@ import java.time.LocalDateTime;
 @ToString
 public class ApiError {
 
+    private int error;
     private HttpStatus status;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy hh:mm:ss")
     private LocalDateTime timestamp;
-    private String error;
+
     private String message;
 }
