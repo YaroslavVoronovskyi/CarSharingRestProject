@@ -9,6 +9,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,22 +32,21 @@ public class CarService implements ICarService {
 
     @Override
     @Transactional(readOnly = true)
-    public Car get(long carId) {
-        LOGGER.debug("Try get car wih id {}", carId);
+    public Car getCarBuId(long carId) {
+        LOGGER.debug("Try get car wih id {} from DB", carId);
         return carRepository.getReferenceById(carId);
     }
 
-    @Override
     @Transactional(readOnly = true)
-    public List<Car> getAll() {
-        LOGGER.debug("Try get all cars");
+    public List<Car> getAllCars() {
+        LOGGER.debug("Try get all cars from DB");
         return carRepository.findAll();
     }
 
     @Override
     @Transactional
-    public Car create(Car car) {
-        LOGGER.debug("Try create new car");
+    public Car createNewCar(Car car) {
+        LOGGER.debug("Try create new car and save in DB");
         try {
             return carRepository.save(car);
         } catch (DataIntegrityViolationException exception) {
@@ -54,27 +56,34 @@ public class CarService implements ICarService {
 
     @Override
     @Transactional
-    public Car update(Car car) {
-        LOGGER.debug("Try update car wih id {}", car.getId());
+    public Car updateCar(Car car) {
+        LOGGER.debug("Try update car wih id {} from DB", car.getId());
         return carRepository.save(car);
     }
 
     @Override
     @Transactional
-    public void delete(long carId) {
-        LOGGER.debug("Try delete car wih id {}", carId);
+    public void deleteCar(long carId) {
+        LOGGER.debug("Try delete car wih id {} from DB", carId);
         try {
             carRepository.deleteById(carId);
         } catch (EmptyResultDataAccessException exception) {
             throw new EntityNotFoundException("Car with id " + carId + " not found!");
         }
-        LOGGER.debug("Car wih id {} was successfully deleted", carId);
+        LOGGER.debug("Car wih id {} was successfully deleted from DB", carId);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Car> getCarByLocation(Double latitude, Double longitude, Long count) {
-        LOGGER.debug("Try get cars wih latitude {} longitude {} and count {}", latitude, longitude, count);
+        LOGGER.debug("Try get cars wih latitude {} longitude {} and count {} from DB", latitude, longitude, count);
         return carRepository.findNearestCarByLocation(latitude, longitude, count);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<Car> getCarByParameters(Specification<Car> carSpecification, Pageable pageable) {
+        LOGGER.debug("Try get cars by parameters from DB");
+        return carRepository.findAll(carSpecification, pageable);
     }
 }

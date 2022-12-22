@@ -7,6 +7,7 @@ import com.grirdynamics.yvoronovskyi.carsharing.model.EngineType;
 import com.grirdynamics.yvoronovskyi.carsharing.model.MachineDriveType;
 import com.grirdynamics.yvoronovskyi.carsharing.model.Transmission;
 import com.grirdynamics.yvoronovskyi.carsharing.util.IEnumValidator;
+import com.grirdynamics.yvoronovskyi.carsharing.util.ILicensePlateValidator;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -19,7 +20,6 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 
@@ -63,35 +63,27 @@ public class CarDto implements Serializable {
     @NotNull(message = "can not be null or empty, less then 4 and more then 25")
     private double fuelConsumption;
 
-    @NotBlank
-    @Size(min = 8, max = 8, message = " should have 8 characters")
-    @Pattern(regexp = "^((([A-Z]{2}[0-9]{4}[A-Z]{2})))$", message = " format -> BC1111CB")
+    @ILicensePlateValidator(message = "should have format -> BC1111CB and should have 8 characters")
     private String licencePlate;
 
-    @NotBlank
     @IEnumValidator(enumClass = CarBodyStyle.class, message = "must be any of: MOTORCYCLE, MICRO, SEDAN, " +
             "MINIVAN, CUV, SUV, HATCHBACK, CABRIOLET, SUPERCAR, PICKUP, LIMOUSINE, CAMPER_VAN")
     private String carBodyStyle;
 
-    @NotBlank
     @IEnumValidator(enumClass = CarClass.class, message = "must be any of: ECONOMY, MEDIUM, BUSINESS, PREMIUM")
     private String carClass;
 
-    @NotBlank
     @IEnumValidator(enumClass = CarStatus.class, message = "must be any of: LOCKED, FREE, RENTED")
     private String carStatus;
 
-    @NotBlank
     @IEnumValidator(enumClass = EngineType.class, message = "must be any of: ELECTRIC, DIESEL, GASOLINE, " +
             "GAS, HYBRID")
     private String engineType;
 
-    @NotBlank
     @IEnumValidator(enumClass = MachineDriveType.class, message = "must be any of: FRONT_WHEEL_DRIVE, " +
             "REAR_WHEEL_DRIVE, ALL_WHEEL_DRIVE")
     private String machineDriveType;
 
-    @NotBlank
     @IEnumValidator(enumClass = Transmission.class, message = "must be any of: MANUAL_TRANSMISSION, " +
             "AUTOMATIC_TRANSMISSION")
     private String transmission;

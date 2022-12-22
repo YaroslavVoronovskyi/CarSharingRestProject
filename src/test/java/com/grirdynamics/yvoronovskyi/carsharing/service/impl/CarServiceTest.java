@@ -42,32 +42,32 @@ public class CarServiceTest {
 
     @Test
     public void shouldReturnExpectedCar() {
-        assertEquals(carService.get(TEST_CAR_ID), createTestCar());
+        assertEquals(carService.getCarBuId(TEST_CAR_ID), createTestCar());
     }
 
     @Test
     public void shouldReturnExpectedCarsList() {
-        assertEquals(carService.getAll(), List.of(createTestCar()));
+        assertEquals(carService.getAllCars(), List.of(createTestCar()));
     }
 
     @Test
     public void shouldRegisterNewCar() {
         Car car = createTestCar();
-        carService.create(car);
+        carService.createNewCar(car);
         Mockito.verify(carRepositoryMock).save(car);
     }
 
     @Test
     public void shouldUpdateCarInformation() {
-        Car car = carService.get(TEST_CAR_ID);
+        Car car = carService.getCarBuId(TEST_CAR_ID);
         car.setCarStatus(CarStatus.FREE);
-        carService.update(car);
+        carService.updateCar(car);
         Mockito.verify(carRepositoryMock).save(car);
     }
 
     @Test
     public void shouldDeleteCarInformation() {
-        carService.delete(TEST_CAR_ID);
+        carService.deleteCar(TEST_CAR_ID);
         Mockito.verify(carRepositoryMock).deleteById(TEST_CAR_ID);
     }
 

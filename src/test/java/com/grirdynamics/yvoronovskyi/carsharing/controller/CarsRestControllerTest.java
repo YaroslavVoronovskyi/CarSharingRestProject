@@ -11,8 +11,6 @@ import com.grirdynamics.yvoronovskyi.carsharing.model.EngineType;
 import com.grirdynamics.yvoronovskyi.carsharing.model.MachineDriveType;
 import com.grirdynamics.yvoronovskyi.carsharing.model.Transmission;
 import com.grirdynamics.yvoronovskyi.carsharing.service.ICarService;
-import org.hibernate.exception.ConstraintViolationException;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -47,26 +45,26 @@ public class CarsRestControllerTest {
     @Test
     public void shouldReturnExpectedCarDtoById() {
         Mockito.when(modelMapperMock.map(any(), any())).thenReturn(createTestCarDto());
-        Mockito.when(carServiceMock.get(TEST_CAR_ID)).thenReturn(createTestCar());
+        Mockito.when(carServiceMock.getCarBuId(TEST_CAR_ID)).thenReturn(createTestCar());
         assertEquals(carsRestController.getCarById(TEST_CAR_ID), createTestCarDto());
     }
 
     @Test
     public void shouldReturnExpectedCarsDtoList() {
         Mockito.when(modelMapperMock.map(any(), any())).thenReturn(createTestCarDto());
-        Mockito.when(carServiceMock.getAll()).thenReturn(List.of((createTestCar())));
+        Mockito.when(carServiceMock.getAllCars()).thenReturn(List.of((createTestCar())));
         assertEquals(carsRestController.showAllCarsOnMap(), List.of(createTestCarDto()));
     }
 
     @Test
     public void shouldDeleteExceptionCarDtoById() {
         carsRestController.deleteCarInformation(TEST_CAR_ID);
-        Mockito.verify(carServiceMock).delete(TEST_CAR_ID);
+        Mockito.verify(carServiceMock).deleteCar(TEST_CAR_ID);
     }
 
     @Test
     public void shouldRegisterNewCar() {
-        Mockito.when(carServiceMock.create(modelMapperMock.map(createTestCarDto(), Car.class))).thenReturn(createTestCar());
+        Mockito.when(carServiceMock.createNewCar(modelMapperMock.map(createTestCarDto(), Car.class))).thenReturn(createTestCar());
         Mockito.when(modelMapperMock.map(createTestCar(), CarDto.class)).thenReturn(createTestCarDto());
         CarDto carDto = carsRestController.registerNewCar(createTestCarDto());
         assertEquals(carDto, createTestCarDto());
@@ -79,7 +77,7 @@ public class CarsRestControllerTest {
         CarDto carDto = createTestCarDto();
         createTestCarDto().setCarStatus("FREE");
         carsRestController.updateCarInformation(TEST_CAR_ID, carDto);
-        Mockito.verify(carServiceMock).update(createTestCar());
+        Mockito.verify(carServiceMock).updateCar(createTestCar());
     }
 
     @Test
@@ -89,14 +87,14 @@ public class CarsRestControllerTest {
         assertEquals(carsDtoList.size(), 1);
     }
 
-    @Disabled
-    @Test
-    public void shouldThrowExceptionWhenTryUpdateCarInformation() {
-        Mockito.when(modelMapperMock.map(any(), any())).thenReturn(createTestCar());
-        CarDto carDto = createTestCarDto();
-        carDto.setFuelLevel(-1);
-        assertThrows(ConstraintViolationException.class, () -> carsRestController.updateCarInformation(TEST_CAR_ID, carDto));
-    }
+//    @Disabled
+//    @Test
+//    public void shouldThrowExceptionWhenTryUpdateCarInformation() {
+//        Mockito.when(modelMapperMock.map(any(), any())).thenReturn(createTestCar());
+//        CarDto carDto = createTestCarDto();
+//        carDto.setFuelLevel(-1);
+//        assertThrows(ConstraintViolationException.class, () -> carsRestController.updateCarInformation(TEST_CAR_ID, carDto));
+//    }
 
     private CarDto createTestCarDto() {
         return CarDto.builder()

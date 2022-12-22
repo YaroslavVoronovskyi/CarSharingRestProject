@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.grirdynamics.yvoronovskyi.carsharing.config.AppConfigTest;
 import com.grirdynamics.yvoronovskyi.carsharing.controller.rest.dto.CarDto;
 import com.grirdynamics.yvoronovskyi.carsharing.controller.rest.dto.CoordinatesDto;
+import net.kaczmarzyk.spring.data.jpa.web.annotation.Or;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -133,18 +134,18 @@ public class CarsRestControllerTestIT {
         assertFalse(carsDtoList.contains(CarDto.builder().id(20L).build()));
     }
 
-    @Test
-    @Order(6)
-    @Disabled
-    public void shouldReturnCarsDtoListByCoordinates() throws JsonProcessingException {
-        Double latitude = 19.834216;
-        Double longitude = 14.032527;
-        Long count = 2L;
-        String response = restTemplate.getForObject("http://localhost:" + port + "/cars/find/location?count=2", String.class, latitude, longitude, count);
-        ObjectMapper mapper = new ObjectMapper();
-        List<CarDto> carsDtoList = mapper.readerForListOf(CarDto.class).readValue(response);
-        assertEquals(carsDtoList.size(), 2);
-    }
+//    @Test
+//    @Order(6)
+//    @Disabled
+//    public void shouldReturnCarsDtoListByCoordinates() throws JsonProcessingException {
+//        Double latitude = 19.834216;
+//        Double longitude = 14.032527;
+//        Long count = 2L;
+//        String response = restTemplate.getForObject("http://localhost:" + port + "/cars/find/location?count=2", String.class, latitude, longitude, count);
+//        ObjectMapper mapper = new ObjectMapper();
+//        List<CarDto> carsDtoList = mapper.readerForListOf(CarDto.class).readValue(response);
+//        assertEquals(carsDtoList.size(), 2);
+//    }
 
     @Test
     @Order(7)
@@ -178,6 +179,34 @@ public class CarsRestControllerTestIT {
             restTemplate.getForObject("http://localhost:" + port + "/cars/100", CarDto.class);
         });
     }
+
+//    @Test
+//    @Order(11)
+//    public void shouldReturnExpectedCarByParameters() throws JsonProcessingException {
+//        String response = restTemplate.getForObject("http://localhost:" + port + "/cars/search?brand=Renault&model=Meagan 3&carClass=MEDIUM&carStatus=FREE&engineType=GASOLINE&transmission=AUTOMATIC_TRANSMISSION", String.class);
+//        ObjectMapper mapper = new ObjectMapper();
+//        List<CarDto> carsDtoList = mapper.readerForListOf(CarDto.class).readValue(response);
+//        assertEquals(carsDtoList.size(), 20);
+//        assertEquals(carsDtoList.get(0), List.of(createTestCarDto()).get(0));
+//        assertEquals(carsDtoList.get(0).getId(), 1L);
+//        assertEquals(carsDtoList.get(0).getBrand(), "Renault");
+//        assertEquals(carsDtoList.get(0).getModel(), "Meagan 3");
+//        assertEquals(carsDtoList.get(0).getConstructionYear(), 2011);
+//        assertEquals(carsDtoList.get(0).getMileage(), 18000);
+//        assertEquals(carsDtoList.get(0).getFuelLevel(), 30.3);
+//        assertEquals(carsDtoList.get(0).getFuelConsumption(), 7.5);
+//        assertEquals(carsDtoList.get(0).getLicencePlate(), "BC2222CB");
+//        assertEquals(carsDtoList.get(0).getCarBodyStyle(), "SEDAN");
+//        assertEquals(carsDtoList.get(0).getCarClass(), "MEDIUM");
+//        assertEquals(carsDtoList.get(0).getCarStatus(), "RENTED");
+//        assertEquals(carsDtoList.get(0).getEngineType(), "DIESEL");
+//        assertEquals(carsDtoList.get(0).getMachineDriveType(), "FRONT_WHEEL_DRIVE");
+//        assertEquals(carsDtoList.get(0).getTransmission(), "MANUAL_TRANSMISSION");
+//        assertEquals(carsDtoList.get(0).getCarOwnerId(), 1L);
+//        assertEquals(carsDtoList.get(0).getCoordinates().getId(), 1L);
+//        assertEquals(carsDtoList.get(0).getCoordinates().getLatitude(), 19.834216);
+//        assertEquals(carsDtoList.get(0).getCoordinates().getLongitude(), 14.032527);
+//    }
 
     private CarDto createTestCarDto() {
         return CarDto.builder()
