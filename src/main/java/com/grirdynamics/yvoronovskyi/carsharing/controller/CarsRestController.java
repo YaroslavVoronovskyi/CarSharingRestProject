@@ -4,14 +4,15 @@ import com.grirdynamics.yvoronovskyi.carsharing.controller.rest.dto.CarDto;
 import com.grirdynamics.yvoronovskyi.carsharing.model.Car;
 import com.grirdynamics.yvoronovskyi.carsharing.model.CarClass;
 import com.grirdynamics.yvoronovskyi.carsharing.model.CarStatus;
+import com.grirdynamics.yvoronovskyi.carsharing.model.Coordinates;
 import com.grirdynamics.yvoronovskyi.carsharing.model.EngineType;
 import com.grirdynamics.yvoronovskyi.carsharing.model.Transmission;
-import com.grirdynamics.yvoronovskyi.carsharing.repository.specification.CarSpecificationClass;
-import com.grirdynamics.yvoronovskyi.carsharing.repository.specification.CarSpecificationEngineType;
-import com.grirdynamics.yvoronovskyi.carsharing.repository.specification.CarSpecificationStatus;
-import com.grirdynamics.yvoronovskyi.carsharing.repository.specification.CarSpecificationBrand;
-import com.grirdynamics.yvoronovskyi.carsharing.repository.specification.CarSpecificationModel;
-import com.grirdynamics.yvoronovskyi.carsharing.repository.specification.CarSpecificationTransmission;
+import com.grirdynamics.yvoronovskyi.carsharing.service.specification.CarSpecificationBrand;
+import com.grirdynamics.yvoronovskyi.carsharing.service.specification.CarSpecificationClass;
+import com.grirdynamics.yvoronovskyi.carsharing.service.specification.CarSpecificationEngineType;
+import com.grirdynamics.yvoronovskyi.carsharing.service.specification.CarSpecificationModel;
+import com.grirdynamics.yvoronovskyi.carsharing.service.specification.CarSpecificationStatus;
+import com.grirdynamics.yvoronovskyi.carsharing.service.specification.CarSpecificationTransmission;
 import com.grirdynamics.yvoronovskyi.carsharing.service.ICarService;
 import org.modelmapper.MappingException;
 import org.modelmapper.ModelMapper;
@@ -31,7 +32,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -108,20 +108,19 @@ public class CarsRestController {
     @GetMapping("/search/location")
     @Consumes(MediaType.APPLICATION_JSON_VALUE)
     @Produces(MediaType.APPLICATION_JSON_VALUE)
-    public List<CarDto> findNearestCarByLocation(@RequestParam Double latitude, @RequestParam Double longitude,
-                                                 @Param("count") Long count) {
-        LOGGER.debug("Try get cars with latitude {} longitude {} and count {}", latitude, longitude, count);
-        List<Car> carsList = carService.getCarByLocation(latitude, longitude, count);
-        LOGGER.debug("Cars with latitude {} longitude {} and count {} was successfully got", latitude, longitude, count);
+    public List<CarDto> findNearestCarByLocation(@RequestBody Coordinates coordinates, @Param("count") Long count) {
+        LOGGER.debug("Try get cars with latitude {} longitude {} and count {}", coordinates.getLatitude(), coordinates.getLongitude(), count);
+        List<Car> carsList = carService.getCarByLocation(coordinates, count);
+        LOGGER.debug("Cars with latitude {} longitude {} and count {} was successfully got", coordinates.getLatitude(), coordinates.getLongitude(), count);
         return convertToDtoList(carsList);
     }
 
     @GetMapping("/search")
     @Consumes(MediaType.APPLICATION_JSON_VALUE)
     @Produces(MediaType.APPLICATION_JSON_VALUE)
-    Page<Car> findCars(@Param("brand") String brand, @Param("model") String model, @Param("carClass") CarClass carClass,
-                       @Param("carStatus") CarStatus carStatus, @Param("engineType") EngineType engineType,
-                       @Param("transmission") Transmission transmission, Pageable pageable) {
+    Page<Car> findCars(@Param("brand") String[] brand, @Param("model") String[] model, @Param("carClass") CarClass[] carClass,
+                       @Param("carStatus") CarStatus[] carStatus, @Param("engineType") EngineType[] engineType,
+                       @Param("transmission") Transmission[] transmission, Pageable pageable) {
         LOGGER.debug("Try get cars by parameters {} {} {} {} {} {}", brand, model, carClass, carStatus, engineType, transmission);
         Specification<Car> carSpecification = Specification
                 .where(new CarSpecificationBrand(brand))
@@ -137,7 +136,7 @@ public class CarsRestController {
         try {
             return modelMapper.map(car, CarDto.class);
         } catch (MappingException exception) {
-            throw new EntityNotFoundException("Car not found!");
+            throw new EntityNotFoundException("Car does not exist or has been deleted");
         }
     }
 
@@ -146,6 +145,8 @@ public class CarsRestController {
     }
 
     private List<CarDto> convertToDtoList(List<Car> carsList) {
-        return carsList.stream().map(this::convertToDto).collect(Collectors.toList());
+        return carsList.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
     }
 }

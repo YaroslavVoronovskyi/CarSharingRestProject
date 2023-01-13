@@ -1,4 +1,4 @@
-package com.grirdynamics.yvoronovskyi.carsharing.repository.specification;
+package com.grirdynamics.yvoronovskyi.carsharing.service.specification;
 
 import com.grirdynamics.yvoronovskyi.carsharing.model.Car;
 import lombok.AllArgsConstructor;
@@ -9,18 +9,24 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 @AllArgsConstructor
-public class CarSpecificationBrand implements Specification<Car> {
+public class CarSpecificationModel implements Specification<Car> {
 
-    private String brand;
+    private String[] modelsArray;
 
     @Override
     public Predicate toPredicate(Root<Car> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
-        if (brand == null) {
+        if (modelsArray == null) {
             return criteriaBuilder.isTrue(criteriaBuilder.literal(true));
         }
-        return criteriaBuilder.equal(root.get("brand"), this.brand);
+        List<Predicate> predicatesList = Arrays.stream(modelsArray)
+                .map(element -> criteriaBuilder.like(root.get("model"), element))
+                .collect(Collectors.toList());
+        return criteriaBuilder.or(predicatesList.toArray(new Predicate[]{}));
     }
 }

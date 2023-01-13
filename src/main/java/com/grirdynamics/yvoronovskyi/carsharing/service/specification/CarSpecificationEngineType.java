@@ -1,4 +1,4 @@
-package com.grirdynamics.yvoronovskyi.carsharing.repository.specification;
+package com.grirdynamics.yvoronovskyi.carsharing.service.specification;
 
 import com.grirdynamics.yvoronovskyi.carsharing.model.Car;
 import com.grirdynamics.yvoronovskyi.carsharing.model.EngineType;
@@ -10,18 +10,24 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 @AllArgsConstructor
 public class CarSpecificationEngineType implements Specification<Car> {
 
-    private EngineType engineType;
+    private EngineType[] engineTypesArray;
 
     @Override
     public Predicate toPredicate(Root<Car> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
-        if (engineType == null) {
+        if (engineTypesArray == null) {
             return criteriaBuilder.isTrue(criteriaBuilder.literal(true));
         }
-        return criteriaBuilder.equal(root.get("engineType"), this.engineType);
+        List<Predicate> predicatesList = Arrays.stream(engineTypesArray)
+                .map(element -> criteriaBuilder.like(root.get("engineType").as(String.class), element.toString()))
+                .collect(Collectors.toList());
+        return criteriaBuilder.or(predicatesList.toArray(new Predicate[]{}));
     }
 }

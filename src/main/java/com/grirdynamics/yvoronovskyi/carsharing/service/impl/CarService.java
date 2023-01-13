@@ -1,6 +1,7 @@
 package com.grirdynamics.yvoronovskyi.carsharing.service.impl;
 
 import com.grirdynamics.yvoronovskyi.carsharing.model.Car;
+import com.grirdynamics.yvoronovskyi.carsharing.model.Coordinates;
 import com.grirdynamics.yvoronovskyi.carsharing.repository.ICarRepository;
 import com.grirdynamics.yvoronovskyi.carsharing.service.ICarService;
 import com.grirdynamics.yvoronovskyi.carsharing.service.exception.DublicateLicensePlateException;
@@ -16,13 +17,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CarService implements ICarService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CarService.class);
-
+    private static final Double MAX_DISTANCE = 10.000000;
     private final ICarRepository carRepository;
 
     @Autowired
@@ -40,7 +43,12 @@ public class CarService implements ICarService {
     @Transactional(readOnly = true)
     public List<Car> getAllCars() {
         LOGGER.debug("Try get all cars from DB");
-        return carRepository.findAll();
+        List<Car> carsList = carRepository.findAll();
+        if (carsList.isEmpty()) {
+            throw new EntityNotFoundException("Cars not fount!");
+        }
+        LOGGER.debug("All cars was successfully got from DB");
+        return carsList;
     }
 
     @Override
@@ -68,22 +76,64 @@ public class CarService implements ICarService {
         try {
             carRepository.deleteById(carId);
         } catch (EmptyResultDataAccessException exception) {
-            throw new EntityNotFoundException("Car with id " + carId + " not found!");
+            throw new EntityNotFoundException("Car with id " + carId + " does not exist or has been deleted");
         }
         LOGGER.debug("Car wih id {} was successfully deleted from DB", carId);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Car> getCarByLocation(Double latitude, Double longitude, Long count) {
-        LOGGER.debug("Try get cars wih latitude {} longitude {} and count {} from DB", latitude, longitude, count);
-        return carRepository.findNearestCarByLocation(latitude, longitude, count);
+    public List<Car> getCarByLocation(Coordinates coordinates, Long count) {
+        LOGGER.debug("Try get cars wih latitude {} longitude {} and count {} from DB", coordinates.getLatitude(), coordinates.getLongitude(), count);
+        List<Car> carsList = carRepository.findAll().stream()
+                .filter(car -> ((
+                        (car.getCoordinates().getLatitude() == coordinates.getLatitude() &&
+                                car.getCoordinates().getLongitude() == coordinates.getLongitude())
+                                | (car.getCoordinates().getLatitude() + MAX_DISTANCE == coordinates.getLatitude() &&
+                                car.getCoordinates().getLongitude() == coordinates.getLongitude())
+                                | (car.getCoordinates().getLatitude() == coordinates.getLatitude() + MAX_DISTANCE &&
+                                car.getCoordinates().getLongitude() == coordinates.getLongitude())
+                                | (car.getCoordinates().getLatitude() == coordinates.getLatitude() &&
+                                car.getCoordinates().getLongitude() + MAX_DISTANCE == coordinates.getLongitude())
+                                | (car.getCoordinates().getLatitude() == coordinates.getLatitude() &&
+                                car.getCoordinates().getLongitude() == coordinates.getLongitude() + MAX_DISTANCE)
+                                | (car.getCoordinates().getLatitude() - MAX_DISTANCE == coordinates.getLatitude() &&
+                                car.getCoordinates().getLongitude() == coordinates.getLongitude())
+                                | (car.getCoordinates().getLatitude() == coordinates.getLatitude() - MAX_DISTANCE &&
+                                car.getCoordinates().getLongitude() == coordinates.getLongitude())
+                                | (car.getCoordinates().getLatitude() == coordinates.getLatitude() &&
+                                car.getCoordinates().getLongitude() - MAX_DISTANCE == coordinates.getLongitude())
+                                | (car.getCoordinates().getLatitude() == coordinates.getLatitude() &&
+                                car.getCoordinates().getLongitude() == coordinates.getLongitude() - MAX_DISTANCE)
+                                | (car.getCoordinates().getLatitude() == coordinates.getLatitude() - MAX_DISTANCE &&
+                                car.getCoordinates().getLongitude() == coordinates.getLongitude() - MAX_DISTANCE)
+                                | (car.getCoordinates().getLatitude() == coordinates.getLatitude() + MAX_DISTANCE &&
+                                car.getCoordinates().getLongitude() == coordinates.getLongitude() + MAX_DISTANCE)
+                                | (car.getCoordinates().getLatitude() - MAX_DISTANCE == coordinates.getLatitude() &&
+                                car.getCoordinates().getLongitude() - MAX_DISTANCE == coordinates.getLongitude())
+                                | (car.getCoordinates().getLatitude() + MAX_DISTANCE == coordinates.getLatitude() &&
+                                car.getCoordinates().getLongitude() + MAX_DISTANCE == coordinates.getLongitude())
+                )))
+                .limit(count)
+                .sorted(Comparator.comparing(car -> car.getCoordinates().getLatitude()))
+                .collect(Collectors.toList());
+        if (carsList.isEmpty()) {
+            throw new EntityNotFoundException("Cars by coordinates not fount, try another coordinates");
+        }
+        LOGGER.debug("Cars with latitude {} longitude {} and count {} was successfully got from DB",
+                coordinates.getLatitude(), coordinates.getLongitude(), count);
+        return carsList;
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<Car> getCarByParameters(Specification<Car> carSpecification, Pageable pageable) {
         LOGGER.debug("Try get cars by parameters from DB");
-        return carRepository.findAll(carSpecification, pageable);
+        Page<Car> cars = carRepository.findAll(carSpecification, pageable);
+        if (cars.isEmpty()) {
+            throw new EntityNotFoundException("Cars by parameters not fount, set some parameters");
+        }
+        LOGGER.debug("Cars by parameters was successfully got from DB");
+        return cars;
     }
 }

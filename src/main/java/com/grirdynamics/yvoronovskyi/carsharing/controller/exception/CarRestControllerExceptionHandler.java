@@ -36,7 +36,7 @@ public class CarRestControllerExceptionHandler extends ResponseEntityExceptionHa
                 .error(HttpStatus.BAD_REQUEST.value())
                 .status(HttpStatus.BAD_REQUEST)
                 .timestamp(LocalDateTime.now())
-                .message(errors.toString())
+                .message(String.join(" message: ", errors))
                 .build();
         return buildResponseEntity(apiError);
     }
@@ -69,7 +69,7 @@ public class CarRestControllerExceptionHandler extends ResponseEntityExceptionHa
                 .error(HttpStatus.CONFLICT.value())
                 .status(HttpStatus.CONFLICT)
                 .timestamp(LocalDateTime.now())
-                .message(exception.getLocalizedMessage())
+                .message(exception.getMessage())
                 .build();
         return buildResponseEntity(apiError);
     }
@@ -80,7 +80,8 @@ public class CarRestControllerExceptionHandler extends ResponseEntityExceptionHa
                 .error(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .timestamp(LocalDateTime.now())
-                .message(exception.getMessage()).build();
+                .message(exception.getMessage())
+                .build();
         return buildResponseEntity(apiError);
     }
 
