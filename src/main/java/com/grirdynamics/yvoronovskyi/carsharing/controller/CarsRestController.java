@@ -108,10 +108,10 @@ public class CarsRestController {
     @GetMapping("/search/location")
     @Consumes(MediaType.APPLICATION_JSON_VALUE)
     @Produces(MediaType.APPLICATION_JSON_VALUE)
-    public List<CarDto> findNearestCarByLocation(@RequestBody Coordinates coordinates, @Param("count") Long count) {
-        LOGGER.debug("Try get cars with latitude {} longitude {} and count {}", coordinates.getLatitude(), coordinates.getLongitude(), count);
-        List<Car> carsList = carService.getCarByLocation(coordinates, count);
-        LOGGER.debug("Cars with latitude {} longitude {} and count {} was successfully got", coordinates.getLatitude(), coordinates.getLongitude(), count);
+    public List<CarDto> findNearestCarByLocation(@Param("latitude") Double latitude, @Param("longitude") Double longitude, @Param("count") Long count) {
+        LOGGER.debug("Try get cars with latitude {} longitude {} and count {}", latitude, longitude, count);
+        List<Car> carsList = carService.getCarByLocation(latitude, longitude, count);
+        LOGGER.debug("Cars with latitude {} longitude {} and count {} was successfully got", latitude, longitude, count);
         return convertToDtoList(carsList);
     }
 

@@ -28,12 +28,11 @@ public class CoordinatesDto implements Serializable {
 
     @Min(-90)
     @Max(90)
-    @NotNull
     @NotNull(message = "Latitude can not be null or empty")
-    private double latitude;
+    private Double latitude;
 
     @Min(-180)
     @Max(180)
     @NotNull(message = "Longitude can not be null or empty")
-    private double longitude;
+    private Double longitude;
 }

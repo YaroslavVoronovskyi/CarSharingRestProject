@@ -37,8 +37,8 @@ public class Coordinates implements Serializable {
     private long id;
 
     @Column(nullable = false)
-    private double latitude;
+    private Double latitude;
 
     @Column(nullable = false)
-    private double longitude;
+    private Double longitude;
 }

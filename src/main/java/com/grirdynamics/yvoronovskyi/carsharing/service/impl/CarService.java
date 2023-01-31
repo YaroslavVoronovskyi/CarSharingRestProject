@@ -83,45 +83,46 @@ public class CarService implements ICarService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Car> getCarByLocation(Coordinates coordinates, Long count) {
-        LOGGER.debug("Try get cars wih latitude {} longitude {} and count {} from DB", coordinates.getLatitude(), coordinates.getLongitude(), count);
-        List<Car> carsList = carRepository.findAll().stream()
-                .filter(car -> ((
-                        (car.getCoordinates().getLatitude() == coordinates.getLatitude() &&
-                                car.getCoordinates().getLongitude() == coordinates.getLongitude())
-                                | (car.getCoordinates().getLatitude() + MAX_DISTANCE == coordinates.getLatitude() &&
-                                car.getCoordinates().getLongitude() == coordinates.getLongitude())
-                                | (car.getCoordinates().getLatitude() == coordinates.getLatitude() + MAX_DISTANCE &&
-                                car.getCoordinates().getLongitude() == coordinates.getLongitude())
-                                | (car.getCoordinates().getLatitude() == coordinates.getLatitude() &&
-                                car.getCoordinates().getLongitude() + MAX_DISTANCE == coordinates.getLongitude())
-                                | (car.getCoordinates().getLatitude() == coordinates.getLatitude() &&
-                                car.getCoordinates().getLongitude() == coordinates.getLongitude() + MAX_DISTANCE)
-                                | (car.getCoordinates().getLatitude() - MAX_DISTANCE == coordinates.getLatitude() &&
-                                car.getCoordinates().getLongitude() == coordinates.getLongitude())
-                                | (car.getCoordinates().getLatitude() == coordinates.getLatitude() - MAX_DISTANCE &&
-                                car.getCoordinates().getLongitude() == coordinates.getLongitude())
-                                | (car.getCoordinates().getLatitude() == coordinates.getLatitude() &&
-                                car.getCoordinates().getLongitude() - MAX_DISTANCE == coordinates.getLongitude())
-                                | (car.getCoordinates().getLatitude() == coordinates.getLatitude() &&
-                                car.getCoordinates().getLongitude() == coordinates.getLongitude() - MAX_DISTANCE)
-                                | (car.getCoordinates().getLatitude() == coordinates.getLatitude() - MAX_DISTANCE &&
-                                car.getCoordinates().getLongitude() == coordinates.getLongitude() - MAX_DISTANCE)
-                                | (car.getCoordinates().getLatitude() == coordinates.getLatitude() + MAX_DISTANCE &&
-                                car.getCoordinates().getLongitude() == coordinates.getLongitude() + MAX_DISTANCE)
-                                | (car.getCoordinates().getLatitude() - MAX_DISTANCE == coordinates.getLatitude() &&
-                                car.getCoordinates().getLongitude() - MAX_DISTANCE == coordinates.getLongitude())
-                                | (car.getCoordinates().getLatitude() + MAX_DISTANCE == coordinates.getLatitude() &&
-                                car.getCoordinates().getLongitude() + MAX_DISTANCE == coordinates.getLongitude())
-                )))
-                .limit(count)
-                .sorted(Comparator.comparing(car -> car.getCoordinates().getLatitude()))
-                .collect(Collectors.toList());
+    public List<Car> getCarByLocation(Double latitude, Double longitude, Long count) {
+        LOGGER.debug("Try get cars wih latitude {} longitude {} and count {} from DB", latitude, longitude, count);
+//        List<Car> carsList = carRepository.findAll().stream()
+//                .filter(car -> ((
+//                        (car.getCoordinates().getLatitude() == coordinates.getLatitude() &&
+//                                car.getCoordinates().getLongitude() == coordinates.getLongitude())
+//                                | (car.getCoordinates().getLatitude() + MAX_DISTANCE == coordinates.getLatitude() &&
+//                                car.getCoordinates().getLongitude() == coordinates.getLongitude())
+//                                | (car.getCoordinates().getLatitude() == coordinates.getLatitude() + MAX_DISTANCE &&
+//                                car.getCoordinates().getLongitude() == coordinates.getLongitude())
+//                                | (car.getCoordinates().getLatitude() == coordinates.getLatitude() &&
+//                                car.getCoordinates().getLongitude() + MAX_DISTANCE == coordinates.getLongitude())
+//                                | (car.getCoordinates().getLatitude() == coordinates.getLatitude() &&
+//                                car.getCoordinates().getLongitude() == coordinates.getLongitude() + MAX_DISTANCE)
+//                                | (car.getCoordinates().getLatitude() - MAX_DISTANCE == coordinates.getLatitude() &&
+//                                car.getCoordinates().getLongitude() == coordinates.getLongitude())
+//                                | (car.getCoordinates().getLatitude() == coordinates.getLatitude() - MAX_DISTANCE &&
+//                                car.getCoordinates().getLongitude() == coordinates.getLongitude())
+//                                | (car.getCoordinates().getLatitude() == coordinates.getLatitude() &&
+//                                car.getCoordinates().getLongitude() - MAX_DISTANCE == coordinates.getLongitude())
+//                                | (car.getCoordinates().getLatitude() == coordinates.getLatitude() &&
+//                                car.getCoordinates().getLongitude() == coordinates.getLongitude() - MAX_DISTANCE)
+//                                | (car.getCoordinates().getLatitude() == coordinates.getLatitude() - MAX_DISTANCE &&
+//                                car.getCoordinates().getLongitude() == coordinates.getLongitude() - MAX_DISTANCE)
+//                                | (car.getCoordinates().getLatitude() == coordinates.getLatitude() + MAX_DISTANCE &&
+//                                car.getCoordinates().getLongitude() == coordinates.getLongitude() + MAX_DISTANCE)
+//                                | (car.getCoordinates().getLatitude() - MAX_DISTANCE == coordinates.getLatitude() &&
+//                                car.getCoordinates().getLongitude() - MAX_DISTANCE == coordinates.getLongitude())
+//                                | (car.getCoordinates().getLatitude() + MAX_DISTANCE == coordinates.getLatitude() &&
+//                                car.getCoordinates().getLongitude() + MAX_DISTANCE == coordinates.getLongitude())
+//                )))
+//                .limit(count)
+//                .sorted(Comparator.comparing(car -> car.getCoordinates().getLatitude()))
+//                .collect(Collectors.toList());
+        List<Car> carsList = carRepository.findNearestCarByLocation(latitude, longitude, count);
         if (carsList.isEmpty()) {
             throw new EntityNotFoundException("Cars by coordinates not fount, try another coordinates");
         }
         LOGGER.debug("Cars with latitude {} longitude {} and count {} was successfully got from DB",
-                coordinates.getLatitude(), coordinates.getLongitude(), count);
+                latitude, longitude, count);
         return carsList;
     }
 

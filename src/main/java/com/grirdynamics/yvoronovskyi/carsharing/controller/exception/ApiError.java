@@ -12,6 +12,7 @@ import org.springframework.boot.context.properties.ConstructorBinding;
 import org.springframework.http.HttpStatus;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Builder
 @Getter
@@ -29,5 +30,5 @@ public class ApiError {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy hh:mm:ss")
     private LocalDateTime timestamp;
 
-    private String message;
+    private List<String> message;
 }

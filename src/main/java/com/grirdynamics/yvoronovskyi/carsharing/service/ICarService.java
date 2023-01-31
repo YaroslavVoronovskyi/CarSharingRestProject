@@ -15,6 +15,6 @@ public interface ICarService {
     Car createNewCar(Car car);
     Car updateCar(Car car);
     void deleteCar(long carId);
-    List<Car> getCarByLocation(Coordinates coordinates, Long count);
+    List<Car> getCarByLocation(Double latitude, Double longitude, Long count);
     Page<Car> getCarByParameters(Specification<Car> carSpecification, Pageable pageable);
 }
